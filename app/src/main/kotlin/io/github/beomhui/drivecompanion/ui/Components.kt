@@ -118,7 +118,7 @@ fun NoteCard(
                 if (reason != null) ReasonTag(reason, mine)
                 if (note.importance == Importance.HIGH) Tag("중요", scheme.tertiaryContainer, scheme.onTertiaryContainer)
                 Spacer(Modifier.weight(1f))
-                Icon(anchorIcon(note.anchor), contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                Icon(anchorIcon(note.anchor), contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Text(
                     "${kindLabel(note.kind)} · ${anchorLabel(note.anchor, place)}",
                     style = MaterialTheme.typography.labelMedium,
