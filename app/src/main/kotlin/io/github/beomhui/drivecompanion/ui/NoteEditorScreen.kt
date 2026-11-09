@@ -1,6 +1,11 @@
 package io.github.beomhui.drivecompanion.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
@@ -8,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.beomhui.drivecompanion.core.handover.HandoverService
@@ -52,7 +58,7 @@ fun NoteEditorScreen(ui: HandoverUiState, editor: EditorState, model: HandoverVi
                     onClick = model::saveEditor,
                     enabled = enabled && !editor.listening && editor.text.isNotBlank() && (editor.anchor != NoteAnchor.PLACE || editor.placeId != null),
                     modifier = Modifier.weight(1f).heightIn(min = TouchHeight),
-                ) { Text("저장") }
+                ) { IconLabel(Icons.Rounded.Check, "저장") }
             }
         }
     }
@@ -102,14 +108,14 @@ private fun DictationRow(ui: HandoverUiState, editor: EditorState, model: Handov
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             if (editor.listening) {
-                Button(onClick = model::stopListening, modifier = Modifier.heightIn(min = TouchHeight)) { Text("멈추기") }
+                Button(onClick = model::stopListening, modifier = Modifier.heightIn(min = TouchHeight)) { IconLabel(Icons.Rounded.Close, "멈추기") }
                 Text("듣고 있어요…", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             } else {
-                OutlinedButton(
+                FilledTonalButton(
                     onClick = model::startListening,
                     enabled = !ui.busy && ui.inputAllowed && editor.text.length < HandoverService.MAX_TEXT,
                     modifier = Modifier.heightIn(min = TouchHeight),
-                ) { Text("말로 남기기") }
+                ) { IconLabel(AppIcons.Mic, "말로 남기기") }
             }
         }
         if (editor.listening && editor.partial.isNotBlank()) {
@@ -129,12 +135,12 @@ private fun DictationRow(ui: HandoverUiState, editor: EditorState, model: Handov
 private fun OptionsSection(editor: EditorState, model: HandoverViewModel) {
     ChoiceGroup("무엇을 남기나요?") {
         NoteKind.entries.forEach { kind ->
-            Choice(kindLabel(kind), editor.kind == kind, !editor.editing) { model.updateEditor { copy(kind = kind) } }
+            Choice(kindLabel(kind), editor.kind == kind, !editor.editing, if (kind == NoteKind.TASK) Icons.Rounded.CheckCircle else Icons.Rounded.Info) { model.updateEditor { copy(kind = kind) } }
         }
     }
     ChoiceGroup("무엇에 관한 건가요?") {
         listOf(NoteAnchor.VEHICLE to "차량", NoteAnchor.PLACE to "장소", NoteAnchor.ITEM to "물건").forEach { (anchor, label) ->
-            Choice(label, editor.anchor == anchor, !editor.editing) { model.updateEditor { copy(anchor = anchor) } }
+            Choice(label, editor.anchor == anchor, !editor.editing, anchorIcon(anchor)) { model.updateEditor { copy(anchor = anchor) } }
         }
     }
     if (editor.anchor != NoteAnchor.VEHICLE) {
@@ -178,11 +184,12 @@ private fun ChoiceGroup(title: String, content: @Composable FlowRowScope.() -> U
 }
 
 @Composable
-private fun Choice(label: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
+private fun Choice(label: String, selected: Boolean, enabled: Boolean, icon: ImageVector? = null, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,
         enabled = enabled,
+        leadingIcon = icon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(18.dp)) } },
         label = { Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 12.dp)) },
     )
 }

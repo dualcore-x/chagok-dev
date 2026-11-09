@@ -10,7 +10,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import io.github.beomhui.drivecompanion.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -64,16 +67,33 @@ private val night = darkColorScheme(
     onErrorContainer = Color(0xFFFFDAD6),
 )
 
-// 글자는 휴대폰보다 한 단계 크게 쓴다.
+// Pretendard Std(OFL-1.1, assets/licenses). 자주 쓰는 한글 2,350자와 영문만 담은 경량판이라 드문 글자는 시스템 글꼴로 보인다.
+private val Pretendard = FontFamily(
+    Font(R.font.pretendard_regular, FontWeight.Normal),
+    Font(R.font.pretendard_medium, FontWeight.Medium),
+    Font(R.font.pretendard_semibold, FontWeight.SemiBold),
+    Font(R.font.pretendard_bold, FontWeight.Bold),
+)
+
+// 글자는 휴대폰보다 한 단계 크게 쓴다. 모든 글자에 Pretendard를 쓰고 자간을 살짝 좁혀 단정하게 보이게 한다.
 private val base = Typography()
+private fun TextStyle.pretendard() = copy(fontFamily = Pretendard, letterSpacing = (-0.2).sp)
 private val typography = Typography(
-    headlineMedium = base.headlineMedium.copy(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.SemiBold),
-    titleLarge = base.titleLarge.copy(fontSize = 26.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold),
-    titleMedium = base.titleMedium.copy(fontSize = 21.sp, lineHeight = 28.sp),
-    bodyLarge = base.bodyLarge.copy(fontSize = 20.sp, lineHeight = 30.sp),
-    bodyMedium = base.bodyMedium.copy(fontSize = 17.sp, lineHeight = 25.sp),
-    labelLarge = base.labelLarge.copy(fontSize = 19.sp, fontWeight = FontWeight.SemiBold),
-    labelMedium = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
+    displayLarge = base.displayLarge.pretendard(),
+    displayMedium = base.displayMedium.pretendard(),
+    displaySmall = base.displaySmall.pretendard(),
+    headlineLarge = base.headlineLarge.pretendard(),
+    headlineSmall = base.headlineSmall.pretendard(),
+    titleSmall = base.titleSmall.pretendard(),
+    bodySmall = base.bodySmall.pretendard(),
+    labelSmall = base.labelSmall.pretendard(),
+    headlineMedium = base.headlineMedium.copy(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.SemiBold).pretendard(),
+    titleLarge = base.titleLarge.copy(fontSize = 26.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold).pretendard(),
+    titleMedium = base.titleMedium.copy(fontSize = 21.sp, lineHeight = 28.sp).pretendard(),
+    bodyLarge = base.bodyLarge.copy(fontSize = 20.sp, lineHeight = 30.sp).pretendard(),
+    bodyMedium = base.bodyMedium.copy(fontSize = 17.sp, lineHeight = 25.sp).pretendard(),
+    labelLarge = base.labelLarge.copy(fontSize = 19.sp, fontWeight = FontWeight.SemiBold).pretendard(),
+    labelMedium = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium).pretendard(),
 )
 
 // 모서리는 넉넉히 둥글게. 카드와 버튼이 부드럽고 친근해 보이게 한다.

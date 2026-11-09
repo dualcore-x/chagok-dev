@@ -1,6 +1,12 @@
 package io.github.beomhui.drivecompanion.ui
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,9 +68,16 @@ fun anchorLabel(anchor: NoteAnchor, place: Place?): String = when (anchor) {
 fun kindLabel(kind: NoteKind) = if (kind == NoteKind.TASK) "해야 할 일" else "참고 정보"
 
 @Composable
-fun Tag(text: String, container: Color, content: Color) {
+/** 둥근 알약 모양 표시. dot이면 앞에 작은 상태 점을 찍는다(주차 중 같은 실시간 상태). */
+fun Tag(text: String, container: Color, content: Color, dot: Color? = null) {
     Surface(color = container, contentColor = content, shape = RoundedCornerShape(50)) {
-        Text(text, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (dot != null) {
+                Box(Modifier.size(8.dp).clip(CircleShape).background(dot))
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(text, style = MaterialTheme.typography.labelMedium)
+        }
     }
 }
 
@@ -87,22 +101,24 @@ fun NoteCard(
     place: Place?,
     reason: BriefingReason?,
     mine: Boolean = false,
+    modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val emphasized = reason == BriefingReason.NEW || reason == BriefingReason.UPDATED
     // 새로 받거나 바뀐 인계는 강조색 테두리로 먼저 눈에 띄게 한다. 색 태그는 상태만, 나머지 정보는 회색 한 줄로 모은다.
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth().then(if (emphasized) Modifier.border(2.dp, scheme.primary, MaterialTheme.shapes.large) else Modifier),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(containerColor = if (emphasized) scheme.surfaceContainerHigh else scheme.surfaceVariant),
-        border = if (emphasized) BorderStroke(2.dp, scheme.primary) else BorderStroke(1.dp, scheme.outlineVariant),
+        colors = CardDefaults.elevatedCardColors(containerColor = if (emphasized) scheme.surfaceContainerHigh else scheme.surfaceVariant),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (reason != null) ReasonTag(reason, mine)
                 if (note.importance == Importance.HIGH) Tag("중요", scheme.tertiaryContainer, scheme.onTertiaryContainer)
                 Spacer(Modifier.weight(1f))
+                Icon(anchorIcon(note.anchor), contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 Text(
                     "${kindLabel(note.kind)} · ${anchorLabel(note.anchor, place)}",
                     style = MaterialTheme.typography.labelMedium,
@@ -146,6 +162,8 @@ fun SectionTitle(text: String, count: Int? = null) {
 fun Banner(text: String, actionLabel: String? = null, onAction: () -> Unit = {}) {
     Surface(color = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer, shape = MaterialTheme.shapes.medium) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(22.dp))
+            Spacer(Modifier.width(12.dp))
             Text(text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             if (actionLabel != null) {
                 TextButton(onClick = onAction, modifier = Modifier.heightIn(min = TouchHeight)) { Text(actionLabel) }
@@ -162,7 +180,7 @@ private const val CollapsedLines = 4
 private fun LongText(text: String) {
     var expanded by remember(text) { mutableStateOf(false) }
     var clipped by remember(text) { mutableStateOf(false) }
-    Column {
+    Column(Modifier.animateContentSize()) {
         Text(
             text,
             style = MaterialTheme.typography.bodyLarge,
