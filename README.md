@@ -58,7 +58,17 @@ release 서명키는 저장소 밖에 둡니다. 처음 한 번 `tools/make-sign
 
 ## APK
 
-제출용 release APK는 `apk/DualCore_Chagok_release.apk`입니다(11/10 확정 후 추가). 용량이 GitHub 제한을 넘으면 GitHub Releases에 올리고 링크를 여기에 적습니다.
+제출용 release APK는 `apk/DualCore_Chagok_release.apk`입니다.
+
+| 항목 | 값 |
+| --- | --- |
+| 빌드한 소스 | main `374be30` (`./gradlew :app:assembleRelease`) |
+| 버전 | versionName 0.2.0 · versionCode 1 · minSdk 28 · targetSdk 35 |
+| 서명 | APK Signature Scheme v3, 인증서 SHA-256 `5440cde4fd78a24d2d64ea98c6fd498ef30a07f002e51ae1dbe6a0f9387e1e07` |
+| 파일 SHA-256 | `50a2da88f9d4cdcbc8a09fd039021c9e48c021cada04788a170a630158c3c180` |
+| 크기 | 42.6MB |
+
+받은 파일이 같은지 확인할 때는 `shasum -a 256 apk/DualCore_Chagok_release.apk`의 결과를 위 값과 비교합니다.
 
 ## 문서
 
