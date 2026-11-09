@@ -1,6 +1,19 @@
 package io.github.beomhui.drivecompanion.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ExitToApp
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Place
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,10 +24,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.beomhui.drivecompanion.BuildConfig
+import io.github.beomhui.drivecompanion.R
 import io.github.beomhui.drivecompanion.core.handover.ArrivalEvidence
 import io.github.beomhui.drivecompanion.core.handover.Briefing
 import io.github.beomhui.drivecompanion.core.handover.BriefingItem
@@ -76,17 +93,17 @@ private fun Overview(briefing: Briefing) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("${briefing.driver.name}님,\n인수할 내용이에요", style = MaterialTheme.typography.headlineMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Stat("새로 받음", fresh, scheme.primaryContainer, scheme.onPrimaryContainer, Modifier.weight(1f))
-            Stat("중요", important, scheme.tertiaryContainer, scheme.onTertiaryContainer, Modifier.weight(1f))
+            Stat(Icons.Rounded.Notifications, "새로 받음", fresh, scheme.primaryContainer, scheme.onPrimaryContainer, Modifier.weight(1f))
+            Stat(Icons.Rounded.Star, "중요", important, scheme.tertiaryContainer, scheme.onTertiaryContainer, Modifier.weight(1f))
             if (briefing.destination != null) {
-                Stat("목적지 일", briefing.atDestination.size, scheme.secondaryContainer, scheme.onSecondaryContainer, Modifier.weight(1f))
+                Stat(Icons.Rounded.Place, "목적지 일", briefing.atDestination.size, scheme.secondaryContainer, scheme.onSecondaryContainer, Modifier.weight(1f))
             }
         }
     }
 }
 
 @Composable
-private fun Stat(label: String, count: Int, container: Color, content: Color, modifier: Modifier) {
+private fun Stat(icon: ImageVector, label: String, count: Int, container: Color, content: Color, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     // 0이면 눈에 띄지 않게 가라앉힌다. 남은 게 있을 때만 색이 들어온다.
     Surface(
@@ -96,6 +113,7 @@ private fun Stat(label: String, count: Int, container: Color, content: Color, mo
         modifier = modifier,
     ) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
             Text("$count", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
             Text(label, style = MaterialTheme.typography.labelMedium)
         }
@@ -105,10 +123,10 @@ private fun Stat(label: String, count: Int, container: Color, content: Color, mo
 @Composable
 private fun Actions(enabled: Boolean, model: HandoverViewModel, modifier: Modifier = Modifier.fillMaxWidth()) {
     Button(onClick = { model.newNote() }, enabled = enabled, modifier = modifier.heightIn(min = TouchHeight)) {
-        Text("인계 남기기")
+        IconLabel(Icons.Rounded.Add, "인계 남기기")
     }
-    OutlinedButton(onClick = model::requestReturn, enabled = enabled, modifier = modifier.heightIn(min = TouchHeight)) {
-        Text("반납하기")
+    FilledTonalButton(onClick = model::requestReturn, enabled = enabled, modifier = modifier.heightIn(min = TouchHeight)) {
+        IconLabel(Icons.AutoMirrored.Rounded.ExitToApp, "반납하기")
     }
 }
 
@@ -126,12 +144,7 @@ private fun NoteList(
         val empty = briefing.atDestination.isEmpty() && briefing.attention.isEmpty() &&
             briefing.carriedOver.isEmpty() && briefing.others.isEmpty()
         if (empty) {
-            item {
-                Text(
-                    "진행 중인 인계가 없어요. 차를 넘기기 전에 다음 사람이 알아야 할 내용이 있으면 '인계 남기기'를 눌러주세요.",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
+            item(key = "empty") { EmptyNotes() }
         }
         briefing.destination?.let { section("이번 목적지 · ${it.name}", briefing.atDestination, briefing.driver.id, enabled, model) }
         section("새로 받은 인계", briefing.attention, briefing.driver.id, enabled, model)
@@ -157,7 +170,7 @@ private fun NoteList(
                             )
                         }
                         TextButton(onClick = { model.reopen(entry.note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
-                            Text("다시 열기")
+                            IconLabel(Icons.Rounded.Refresh, "다시 열기")
                         }
                     }
                 }
@@ -181,20 +194,20 @@ private fun androidx.compose.foundation.lazy.LazyListScope.section(
         val needsAck = item.needsAcknowledgement
         NoteCard(note, item.author?.name, item.place, item.reason, mine = item.author?.id == driverId) {
             TextButton(onClick = { model.editNote(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
-                Text("고치기")
+                IconLabel(Icons.Rounded.Edit, "고치기")
             }
             if (note.kind == NoteKind.TASK) {
-                OutlinedButton(onClick = { model.requestResolve(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
-                    Text("처리 완료")
+                FilledTonalButton(onClick = { model.requestResolve(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
+                    IconLabel(Icons.Rounded.CheckCircle, "처리 완료")
                 }
             } else {
-                OutlinedButton(onClick = { model.requestArchive(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
-                    Text("정보 내리기")
+                FilledTonalButton(onClick = { model.requestArchive(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
+                    IconLabel(Icons.Rounded.Close, "정보 내리기")
                 }
             }
             if (needsAck) {
                 Button(onClick = { model.acknowledge(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
-                    Text("확인했어요")
+                    IconLabel(Icons.Rounded.Check, "확인했어요")
                 }
             }
         }
@@ -260,11 +273,34 @@ private fun DestinationPanel(ui: HandoverUiState, enabled: Boolean, model: Hando
                     )
                 }
                 if (place != null && !ui.arrived) {
-                    OutlinedButton(onClick = model::confirmArrival, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
-                        Text("도착했어요")
+                    FilledTonalButton(onClick = model::confirmArrival, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
+                        IconLabel(Icons.Rounded.Place, "도착했어요")
                     }
                 }
             }
         }
+    }
+}
+
+/** 남은 인계가 없을 때. 앱 그림과 짧은 안내만 둔다. */
+@Composable
+private fun EmptyNotes() {
+    Column(
+        Modifier.fillMaxWidth().padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            Modifier.size(72.dp).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(painterResource(R.drawable.ic_launcher_foreground), contentDescription = null, modifier = Modifier.requiredSize(140.dp))
+        }
+        Text("진행 중인 인계가 없어요", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+        Text(
+            "다음 사람이 알아야 할 게 있으면 '인계 남기기'를 눌러주세요.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

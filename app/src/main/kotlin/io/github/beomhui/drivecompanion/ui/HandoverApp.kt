@@ -3,6 +3,12 @@ package io.github.beomhui.drivecompanion.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ExitToApp
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Place
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -74,9 +80,10 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     ui.takeover?.let { (next, previous) ->
         AlertDialog(
             onDismissRequest = model::dismissTakeover,
+            icon = { Icon(Icons.Rounded.Person, contentDescription = null) },
             title = { Text("${previous?.name ?: "다른 운전자"}님의 사용이 반납되지 않았어요") },
             text = { Text("대신 반납 처리하고 ${next.name}님으로 시작할까요? 반납 기록에는 '대신 종료'로 남아요.") },
-            confirmButton = { TextButton(onClick = model::confirmTakeover) { Text("대신 종료하고 시작") } },
+            confirmButton = { Button(onClick = model::confirmTakeover) { Text("대신 종료하고 시작") } },
             dismissButton = { TextButton(onClick = model::dismissTakeover) { Text("취소") } },
         )
     }
@@ -86,6 +93,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
         val hasTask = items.any { it.note.kind == NoteKind.TASK }
         AlertDialog(
             onDismissRequest = model::dismissArrival,
+            icon = { Icon(Icons.Rounded.Place, contentDescription = null) },
             title = { Text("${place.name}에 도착했어요") },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -102,11 +110,11 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
                             )
                             Text(item.note.text, style = MaterialTheme.typography.bodyLarge)
                             if (item.note.kind == NoteKind.TASK) {
-                                OutlinedButton(
+                                FilledTonalButton(
                                     onClick = { model.resolveFromArrival(item.note) },
                                     enabled = !ui.busy && ui.inputAllowed,
                                     modifier = Modifier.heightIn(min = TouchHeight),
-                                ) { Text("처리 완료로 기록") }
+                                ) { IconLabel(Icons.Rounded.CheckCircle, "처리 완료로 기록") }
                             }
                         }
                     }
@@ -120,6 +128,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
         var comment by remember(note.id) { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = model::dismissResolve,
+            icon = { Icon(Icons.Rounded.CheckCircle, contentDescription = null) },
             title = { Text("처리 완료로 기록할까요?") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -133,7 +142,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
                     )
                 }
             },
-            confirmButton = { TextButton(onClick = { model.resolve(comment) }, enabled = !ui.busy) { Text("완료") } },
+            confirmButton = { Button(onClick = { model.resolve(comment) }, enabled = !ui.busy) { Text("완료") } },
             dismissButton = { TextButton(onClick = model::dismissResolve) { Text("취소") } },
         )
     }
@@ -141,6 +150,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     ui.archiving?.let { note ->
         AlertDialog(
             onDismissRequest = model::dismissArchive,
+            icon = { Icon(Icons.Rounded.Close, contentDescription = null) },
             title = { Text("이 참고 정보를 내릴까요?") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -152,7 +162,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
                     )
                 }
             },
-            confirmButton = { TextButton(onClick = model::archive, enabled = !ui.busy) { Text("내리기") } },
+            confirmButton = { Button(onClick = model::archive, enabled = !ui.busy) { Text("내리기") } },
             dismissButton = { TextButton(onClick = model::dismissArchive) { Text("취소") } },
         )
     }
@@ -160,6 +170,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     if (ui.confirmReturn) {
         AlertDialog(
             onDismissRequest = model::dismissReturn,
+            icon = { Icon(Icons.AutoMirrored.Rounded.ExitToApp, contentDescription = null) },
             title = { Text("반납할까요?") },
             text = {
                 Text(
@@ -167,7 +178,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
                     else "남은 일이 없어요. 다음 운전자에게 알릴 내용이 있다면 먼저 남겨주세요.",
                 )
             },
-            confirmButton = { TextButton(onClick = model::returnVehicle, enabled = !ui.busy) { Text("반납하기") } },
+            confirmButton = { Button(onClick = model::returnVehicle, enabled = !ui.busy) { Text("반납하기") } },
             dismissButton = {
                 Row {
                     TextButton(onClick = model::dismissReturn) { Text("취소") }
@@ -198,8 +209,8 @@ private fun TopBar(ui: HandoverUiState, vehicleName: String) {
             }
             Tag(runtimeLabel(ui.snapshot), scheme.secondaryContainer, scheme.onSecondaryContainer)
             when (ui.parked) {
-                true -> Tag("주차 중", scheme.primaryContainer, scheme.onPrimaryContainer)
-                false -> Tag("주행 중", scheme.errorContainer, scheme.onErrorContainer)
+                true -> Tag("주차 중", scheme.primaryContainer, scheme.onPrimaryContainer, dot = Color(0xFF22B573))
+                false -> Tag("주행 중", scheme.errorContainer, scheme.onErrorContainer, dot = scheme.error)
                 null -> if (ui.connecting) Tag("차량 연결 중", scheme.secondaryContainer, scheme.onSecondaryContainer)
                 else Tag("차량 상태 미확인", scheme.errorContainer, scheme.onErrorContainer)
             }

@@ -1,6 +1,8 @@
 package io.github.beomhui.drivecompanion.ui
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -65,13 +67,13 @@ private fun DriverCard(driver: Driver, index: Int, inUse: Boolean, enabled: Bool
         scheme.tertiaryContainer to scheme.onTertiaryContainer,
         scheme.secondaryContainer to scheme.onSecondaryContainer,
     )[index % 3]
-    OutlinedCard(
+    ElevatedCard(
         onClick = onClick,
         enabled = enabled,
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(containerColor = scheme.surfaceVariant),
-        border = BorderStroke(if (inUse) 2.dp else 1.dp, if (inUse) scheme.primary else scheme.outlineVariant),
-        modifier = modifier.heightIn(min = 96.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = scheme.surfaceVariant),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        modifier = modifier.heightIn(min = 96.dp).then(if (inUse) Modifier.border(2.dp, scheme.primary, MaterialTheme.shapes.large) else Modifier),
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Surface(color = circle, contentColor = onCircle, shape = CircleShape, modifier = Modifier.size(56.dp)) {
@@ -79,14 +81,12 @@ private fun DriverCard(driver: Driver, index: Int, inUse: Boolean, enabled: Bool
                     Text(driver.name.drop(1).ifEmpty { driver.name }, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                 }
             }
-            Column {
-                Text(driver.name, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    if (inUse) "이어서 사용" else "사용 시작",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (inUse) scheme.primary else scheme.onSurfaceVariant,
-                )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(driver.name, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold))
+                if (inUse) Tag("이어서 사용", scheme.primary, scheme.onPrimary)
+                else Text("사용 시작", style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
             }
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = scheme.onSurfaceVariant)
         }
     }
 }
