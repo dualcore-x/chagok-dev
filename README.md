@@ -72,3 +72,7 @@ release 서명키는 저장소 밖에 둡니다. 처음 한 번 `tools/make-sign
 | [회귀 확인](docs/regression.md) | 제출 APK를 바꿀 때마다 다시 돌리는 시나리오와 결과 |
 | [확인용 앱](tools/probe/README.md) | 목적지 설정·취소, 오디오 포커스 시험용 개발 도구 |
 | [로드맵](docs/ROADMAP.md) | 일정과 진행 상태 |
+
+## 사용한 글꼴
+
+화면 글꼴은 [Pretendard](https://github.com/orioncactus/pretendard) Std(자주 쓰는 한글 2,350자 경량판)입니다. SIL Open Font License 1.1이며, 라이선스 전문은 `app/src/main/assets/licenses/Pretendard-OFL-1.1.txt`에 있고 APK에도 함께 들어갑니다.

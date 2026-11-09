@@ -1,6 +1,12 @@
 package io.github.beomhui.drivecompanion.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
@@ -67,10 +73,21 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
                             Button(onClick = model::retryLoad, modifier = Modifier.heightIn(min = TouchHeight)) { Text("다시 시도") }
                         }
                     }
-                    else -> when (ui.screen) {
-                        Screen.PROFILES -> ProfileScreen(ui, model)
-                        Screen.BRIEFING -> BriefingScreen(ui, model)
-                        Screen.EDITOR -> ui.editor?.let { NoteEditorScreen(ui, it, model) }
+                    // 화면이 바뀔 때 살짝 밀리며 겹쳐 사라진다. 앞으로 갈수록 오른쪽에서, 돌아갈 때는 왼쪽에서 들어온다.
+                    else -> AnimatedContent(
+                        targetState = ui.screen,
+                        transitionSpec = {
+                            val forward = targetState.ordinal > initialState.ordinal
+                            (fadeIn(tween(240)) + slideInHorizontally(tween(240)) { (if (forward) it else -it) / 10 }) togetherWith
+                                fadeOut(tween(160))
+                        },
+                        label = "screen",
+                    ) { screen ->
+                        when (screen) {
+                            Screen.PROFILES -> ProfileScreen(ui, model)
+                            Screen.BRIEFING -> BriefingScreen(ui, model)
+                            Screen.EDITOR -> ui.editor?.let { NoteEditorScreen(ui, it, model) }
+                        }
                     }
                 }
             }

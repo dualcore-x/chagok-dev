@@ -1,5 +1,12 @@
 package io.github.beomhui.drivecompanion.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -114,7 +121,15 @@ private fun Stat(icon: ImageVector, label: String, count: Int, container: Color,
     ) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
-            Text("$count", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
+            // 숫자가 바뀌면 늘면 위로, 줄면 아래로 넘어간다.
+            AnimatedContent(
+                targetState = count,
+                transitionSpec = {
+                    val up = targetState > initialState
+                    (slideInVertically { if (up) it else -it } + fadeIn()) togetherWith (slideOutVertically { if (up) -it else it } + fadeOut())
+                },
+                label = "stat",
+            ) { value -> Text("$value", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)) }
             Text(label, style = MaterialTheme.typography.labelMedium)
         }
     }
@@ -151,10 +166,10 @@ private fun NoteList(
         section("계속 남은 중요한 일", briefing.carriedOver, briefing.driver.id, enabled, model)
         section("진행 중인 인계", briefing.others, briefing.driver.id, enabled, model)
         if (ui.recentlyDone.isNotEmpty()) {
-            item { SectionTitle("최근 처리한 일") }
+            item(key = "title-done") { Box(Modifier.animateItem()) { SectionTitle("최근 처리한 일") } }
             items(ui.recentlyDone, key = { "done-" + it.note.id }) { entry ->
                 OutlinedCard(
-                    Modifier.fillMaxWidth(),
+                    Modifier.animateItem().fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
                     colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -188,11 +203,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.section(
     model: HandoverViewModel,
 ) {
     if (items.isEmpty()) return
-    item(key = "title-$title") { SectionTitle(title, items.size) }
+    item(key = "title-$title") { Box(Modifier.animateItem()) { SectionTitle(title, items.size) } }
     items(items, key = { it.note.id }) { item ->
         val note = item.note
         val needsAck = item.needsAcknowledgement
-        NoteCard(note, item.author?.name, item.place, item.reason, mine = item.author?.id == driverId) {
+        // 확인·처리로 카드가 다른 칸으로 옮겨가거나 사라질 때 미끄러지듯 움직인다.
+        NoteCard(note, item.author?.name, item.place, item.reason, mine = item.author?.id == driverId, modifier = Modifier.animateItem()) {
             TextButton(onClick = { model.editNote(note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
                 IconLabel(Icons.Rounded.Edit, "고치기")
             }
@@ -228,7 +244,7 @@ private fun DestinationPanel(ui: HandoverUiState, enabled: Boolean, model: Hando
         border = BorderStroke(1.dp, scheme.outlineVariant),
     ) {
         // 차량 화면은 세로가 짧다. 설명은 꼭 필요한 한 줄만 둔다.
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.animateContentSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     if (destination == null) "어디로 가나요?" else "이번 목적지",

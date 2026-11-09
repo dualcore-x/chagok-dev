@@ -1,5 +1,6 @@
 package io.github.beomhui.drivecompanion.ui
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -100,13 +101,14 @@ fun NoteCard(
     place: Place?,
     reason: BriefingReason?,
     mine: Boolean = false,
+    modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val emphasized = reason == BriefingReason.NEW || reason == BriefingReason.UPDATED
     // 새로 받거나 바뀐 인계는 강조색 테두리로 먼저 눈에 띄게 한다. 색 태그는 상태만, 나머지 정보는 회색 한 줄로 모은다.
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth().then(if (emphasized) Modifier.border(2.dp, scheme.primary, MaterialTheme.shapes.large) else Modifier),
+        modifier = modifier.fillMaxWidth().then(if (emphasized) Modifier.border(2.dp, scheme.primary, MaterialTheme.shapes.large) else Modifier),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(containerColor = if (emphasized) scheme.surfaceContainerHigh else scheme.surfaceVariant),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
@@ -178,7 +180,7 @@ private const val CollapsedLines = 4
 private fun LongText(text: String) {
     var expanded by remember(text) { mutableStateOf(false) }
     var clipped by remember(text) { mutableStateOf(false) }
-    Column {
+    Column(Modifier.animateContentSize()) {
         Text(
             text,
             style = MaterialTheme.typography.bodyLarge,
