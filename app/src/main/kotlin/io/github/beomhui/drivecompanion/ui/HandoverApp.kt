@@ -95,7 +95,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     }
 
     ui.takeover?.let { (next, previous) ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = model::dismissTakeover,
             icon = { Icon(Icons.Rounded.Person, contentDescription = null) },
             title = { Text("${previous?.name ?: "다른 운전자"}님의 사용이 반납되지 않았어요") },
@@ -108,7 +108,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     ui.arrival?.let { place ->
         val items = ui.arrivalItems
         val hasTask = items.any { it.note.kind == NoteKind.TASK }
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = model::dismissArrival,
             icon = { Icon(Icons.Rounded.Place, contentDescription = null) },
             title = { Text("${place.name}에 도착했어요") },
@@ -143,7 +143,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
 
     ui.resolving?.let { note ->
         var comment by remember(note.id) { mutableStateOf("") }
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = model::dismissResolve,
             icon = { Icon(Icons.Rounded.CheckCircle, contentDescription = null) },
             title = { Text("처리 완료로 기록할까요?") },
@@ -165,7 +165,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     }
 
     ui.archiving?.let { note ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = model::dismissArchive,
             icon = { Icon(Icons.Rounded.Close, contentDescription = null) },
             title = { Text("이 참고 정보를 내릴까요?") },
@@ -185,7 +185,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
     }
 
     if (ui.confirmReturn) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = model::dismissReturn,
             icon = { Icon(Icons.AutoMirrored.Rounded.ExitToApp, contentDescription = null) },
             title = { Text("반납할까요?") },
