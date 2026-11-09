@@ -69,9 +69,9 @@
 2. 시연 영상: [첨부 파일명 또는 링크]
 
 개발 산출물
-- GitHub 저장소(비공개): https://github.com/dualcore-lab/chagok
+- GitHub 저장소(비공개): https://github.com/dualcore-x/chagok
   심사용 계정 [심사용 계정 이름]을 Collaborator로 초대해 두었습니다.
-- APK: https://github.com/dualcore-lab/chagok/blob/[태그]/apk/DualCore_Chagok_release.apk
+- APK: https://github.com/dualcore-x/chagok/blob/[태그]/apk/DualCore_Chagok_release.apk
 - 테스트 환경: Pleos Connect Emulator v2.1.0. 실행 방법과 필요한 설정은 저장소 README에 있습니다.
 
 감사합니다.
