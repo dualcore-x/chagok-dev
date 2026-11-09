@@ -1,7 +1,9 @@
 package io.github.beomhui.drivecompanion.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -9,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /*
@@ -73,7 +76,14 @@ private val typography = Typography(
     labelMedium = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
 )
 
+// 모서리는 넉넉히 둥글게. 카드와 버튼이 부드럽고 친근해 보이게 한다.
+private val shapes = Shapes(
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(18.dp),
+    large = RoundedCornerShape(24.dp),
+)
+
 @Composable
 fun DriveCompanionTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) night else day, typography = typography, content = content)
+    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) night else day, typography = typography, shapes = shapes, content = content)
 }

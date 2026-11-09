@@ -1,65 +1,92 @@
 package io.github.beomhui.drivecompanion.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.beomhui.drivecompanion.BuildConfig
+import io.github.beomhui.drivecompanion.core.handover.Driver
 
+/** 운전자를 이름 카드로 고른다. 설명 문장 대신 작은 상태 표시만 둔다. */
 @Composable
 fun ProfileScreen(ui: HandoverUiState, model: HandoverViewModel) {
-    val drivers = model.drivers
+    val scheme = MaterialTheme.colorScheme
+    val current = ui.driver
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Text("누가 운전하나요?", style = MaterialTheme.typography.headlineMedium)
-        val current = ui.driver
-        if (current != null) {
-            Text(
-                "${current.name}님이 사용 중이에요. 이어서 쓰려면 ${current.name}님을, 다른 분이면 본인 이름을 눌러주세요.",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("누가 운전하나요?", style = MaterialTheme.typography.headlineMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (current != null) Tag("${current.name}님 사용 중", scheme.primaryContainer, scheme.onPrimaryContainer)
+                if (ui.openTaskCount > 0) Tag("남은 일 ${ui.openTaskCount}건", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+                else Tag("남은 일 없음", scheme.secondaryContainer, scheme.onSecondaryContainer)
+            }
         }
-        Text(
-            if (ui.openTaskCount > 0) "이 차에 진행 중인 일 ${ui.openTaskCount}건이 남아 있어요. 사용을 시작하면 받을 내용부터 보여드려요."
-            else "이 차에 남아 있는 일이 없어요.",
-            style = MaterialTheme.typography.bodyLarge,
-        )
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val wide = maxWidth > 640.dp
-            val buttons: @Composable (Modifier) -> Unit = { modifier ->
-                drivers.forEach { driver ->
-                    Button(
-                        onClick = { model.selectDriver(driver) },
-                        enabled = !ui.busy && ui.inputAllowed,
-                        modifier = modifier.heightIn(min = 96.dp),
-                    ) {
-                        Column {
-                            Text(driver.name, style = MaterialTheme.typography.titleLarge)
-                            Text(if (driver.id == current?.id) "이어서 사용" else "사용 시작", style = MaterialTheme.typography.labelLarge)
-                        }
-                    }
+            val cards: @Composable (Modifier) -> Unit = { modifier ->
+                model.drivers.forEachIndexed { index, driver ->
+                    DriverCard(driver, index, current?.id == driver.id, !ui.busy && ui.inputAllowed, modifier) { model.selectDriver(driver) }
                 }
             }
             if (wide) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) { buttons(Modifier.weight(1f)) }
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) { cards(Modifier.weight(1f)) }
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { buttons(Modifier.fillMaxWidth()) }
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { cards(Modifier.fillMaxWidth()) }
             }
         }
         Text(
-            "시연 버전은 PIN 없이 프로필 선택으로 시작해요. 앞 사람이 반납하지 않았다면 대신 종료할지 물어봐요.",
+            "시연 버전은 PIN 없이 이름으로 시작해요.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = scheme.onSurfaceVariant,
         )
         if (BuildConfig.DEBUG) {
             DeveloperTools(ui, model)
             SimulationTools(ui, model)
+        }
+    }
+}
+
+@Composable
+private fun DriverCard(driver: Driver, index: Int, inUse: Boolean, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    // 운전자마다 다른 색 동그라미에 이름 두 글자. 한눈에 자기 카드를 찾게 한다.
+    val (circle, onCircle) = listOf(
+        scheme.primaryContainer to scheme.onPrimaryContainer,
+        scheme.tertiaryContainer to scheme.onTertiaryContainer,
+        scheme.secondaryContainer to scheme.onSecondaryContainer,
+    )[index % 3]
+    OutlinedCard(
+        onClick = onClick,
+        enabled = enabled,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = scheme.surfaceVariant),
+        border = BorderStroke(if (inUse) 2.dp else 1.dp, if (inUse) scheme.primary else scheme.outlineVariant),
+        modifier = modifier.heightIn(min = 96.dp),
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Surface(color = circle, contentColor = onCircle, shape = CircleShape, modifier = Modifier.size(56.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(driver.name.drop(1).ifEmpty { driver.name }, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                }
+            }
+            Column {
+                Text(driver.name, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    if (inUse) "이어서 사용" else "사용 시작",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (inUse) scheme.primary else scheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

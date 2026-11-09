@@ -35,6 +35,7 @@ import io.github.beomhui.drivecompanion.core.vehicle.SimulatedVehicleContextSour
 import io.github.beomhui.drivecompanion.core.vehicle.VehicleEvent
 import io.github.beomhui.drivecompanion.core.vehicle.VehicleSnapshot
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -86,6 +87,8 @@ data class HandoverUiState(
     val arrivalItems: List<BriefingItem> = emptyList(),
     /** debug 음성 시험 결과. */
     val speechTest: String? = null,
+    /** 앱을 켠 직후 차량 서비스에 연결되는 중. 이때 상태를 모르는 건 오류가 아니라서 경고 대신 "연결 중"으로 보여준다. */
+    val connecting: Boolean = true,
 ) {
     /** 주차가 확인됐을 때만 입력을 연다. 미확인도 막는다. */
     val inputAllowed: Boolean get() = parked == true
@@ -103,7 +106,14 @@ class HandoverViewModel(private val container: AppContainer) : ViewModel() {
     private val destinations = DestinationTracker(container.fleet)
     private val subscription = container.vehicle.subscribe { event -> viewModelScope.launch { onVehicleEvent(event) } }
 
-    init { load() }
+    init {
+        load()
+        // 연결 완료 신호가 없어서 잠깐 기다린다. 그 뒤에도 상태를 모르면 지금처럼 경고한다.
+        viewModelScope.launch {
+            delay(CONNECT_GRACE_MS)
+            ui = ui.copy(connecting = false)
+        }
+    }
 
     /** 불러오기에 실패한 뒤 다시 시도한다. 저장소는 lazy라 실패하면 다음 접근 때 다시 연다. */
     fun retryLoad() {
@@ -409,7 +419,8 @@ class HandoverViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     private fun refreshVehicle() {
-        ui = ui.copy(parked = container.vehicle.isParked(), snapshot = container.vehicle.currentSnapshot())
+        val parked = container.vehicle.isParked()
+        ui = ui.copy(parked = parked, snapshot = container.vehicle.currentSnapshot(), connecting = ui.connecting && parked == null)
         if (!ui.inputAllowed) abandonListening()
     }
 
@@ -451,6 +462,9 @@ class HandoverViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     companion object {
+        /** Pleos 차량 서비스는 보통 1~2초 안에 붙는다. 여유를 두고 기다린다. */
+        private const val CONNECT_GRACE_MS = 6_000L
+
         val Factory = viewModelFactory {
             initializer { HandoverViewModel((this[APPLICATION_KEY] as DriveCompanionApp).container) }
         }

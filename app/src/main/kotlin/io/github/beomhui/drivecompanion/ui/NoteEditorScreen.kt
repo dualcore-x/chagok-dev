@@ -64,7 +64,7 @@ private fun ContentSection(ui: HandoverUiState, editor: EditorState, model: Hand
     Text(if (editor.editing) "인계 고치기" else "인계 남기기", style = MaterialTheme.typography.headlineMedium)
     if (editor.editing) {
         Text(
-            "고친 내용은 이미 확인한 다른 운전자에게도 '내용 바뀜'으로 다시 보여요.",
+            "고치면 다른 운전자에게 '내용 바뀜'으로 다시 보여요.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -103,7 +103,7 @@ private fun DictationRow(ui: HandoverUiState, editor: EditorState, model: Handov
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             if (editor.listening) {
                 Button(onClick = model::stopListening, modifier = Modifier.heightIn(min = TouchHeight)) { Text("멈추기") }
-                Text("듣고 있어요. 말을 마치면 입력칸에 넣어드려요.", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                Text("듣고 있어요…", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             } else {
                 OutlinedButton(
                     onClick = model::startListening,
@@ -117,7 +117,7 @@ private fun DictationRow(ui: HandoverUiState, editor: EditorState, model: Handov
         }
         if (editor.dictated && !editor.listening) {
             Text(
-                "음성으로 받은 내용이에요. 숫자·층수(B1, B2)는 잘못 들릴 수 있으니 저장 전에 확인하고 고쳐주세요.",
+                "숫자·층수(B1, B2)는 잘못 들릴 수 있어요. 저장 전에 확인해주세요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = scheme.tertiary,
             )
@@ -159,7 +159,7 @@ private fun OptionsSection(editor: EditorState, model: HandoverViewModel) {
         Column(Modifier.weight(1f)) {
             Text("중요한 일로 표시", style = MaterialTheme.typography.titleMedium)
             Text(
-                "다음 운전자에게 먼저 보여주고, 끝날 때까지 계속 남겨요.",
+                "먼저 보여주고, 끝날 때까지 남겨요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
