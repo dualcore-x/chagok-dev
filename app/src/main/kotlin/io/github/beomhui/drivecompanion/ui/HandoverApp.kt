@@ -1,0 +1,198 @@
+package io.github.beomhui.drivecompanion.ui
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.beomhui.drivecompanion.core.handover.NoteKind
+
+/** 내용 폭을 제한해 가로로 넓은 차량 화면에서도 한눈에 읽히게 한다. */
+private val ContentMaxWidth = 960.dp
+
+@Composable
+fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel.Factory)) {
+    val ui = model.ui
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(ui.message) {
+        ui.message?.let {
+            snackbar.showSnackbar(it)
+            model.consumeMessage()
+        }
+    }
+    BackHandler(enabled = ui.screen == Screen.EDITOR) { model.cancelEditor() }
+
+    Scaffold(
+        topBar = { TopBar(ui, model.vehicleName) },
+        snackbarHost = { SnackbarHost(snackbar) },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
+            Column(Modifier.widthIn(max = ContentMaxWidth).fillMaxSize()) {
+                ui.warning?.let { Banner(it, "닫기", model::dismissWarning) }
+                if (!ui.loading && ui.loadError == null && !ui.inputAllowed) {
+                    Banner(
+                        if (ui.parked == false) "주행 중에는 입력할 수 없어요. 주차한 뒤 이어서 진행해주세요."
+                        else "차량 상태를 확인하지 못해 입력을 잠시 막았어요.",
+                    )
+                }
+                when {
+                    ui.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                    ui.loadError != null -> Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text(ui.loadError, style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                "남겨둔 인계는 지우지 않았어요. 다시 시도해도 안 되면 앱을 껐다 켜주세요.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Button(onClick = model::retryLoad, modifier = Modifier.heightIn(min = TouchHeight)) { Text("다시 시도") }
+                        }
+                    }
+                    else -> when (ui.screen) {
+                        Screen.PROFILES -> ProfileScreen(ui, model)
+                        Screen.BRIEFING -> BriefingScreen(ui, model)
+                        Screen.EDITOR -> ui.editor?.let { NoteEditorScreen(ui, it, model) }
+                    }
+                }
+            }
+        }
+    }
+
+    ui.takeover?.let { (next, previous) ->
+        AlertDialog(
+            onDismissRequest = model::dismissTakeover,
+            title = { Text("${previous?.name ?: "다른 운전자"}님의 사용이 반납되지 않았어요") },
+            text = { Text("대신 반납 처리하고 ${next.name}님으로 시작할까요? 반납 기록에는 '대신 종료'로 남아요.") },
+            confirmButton = { TextButton(onClick = model::confirmTakeover) { Text("대신 종료하고 시작") } },
+            dismissButton = { TextButton(onClick = model::dismissTakeover) { Text("취소") } },
+        )
+    }
+
+    ui.arrival?.let { place ->
+        val items = ui.arrivalItems
+        val hasTask = items.any { it.note.kind == NoteKind.TASK }
+        AlertDialog(
+            onDismissRequest = model::dismissArrival,
+            title = { Text("${place.name}에 도착했어요") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        if (hasTask) "이곳에 남겨진 인계예요. 끝낸 일은 처리 완료로 기록해주세요." else "이곳에 남겨진 참고 정보예요.",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    items.forEach { item ->
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                "${kindLabel(item.note.kind)} · ${item.author?.name ?: "알 수 없는 운전자"}",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(item.note.text, style = MaterialTheme.typography.bodyLarge)
+                            if (item.note.kind == NoteKind.TASK) {
+                                OutlinedButton(
+                                    onClick = { model.resolveFromArrival(item.note) },
+                                    enabled = !ui.busy && ui.inputAllowed,
+                                    modifier = Modifier.heightIn(min = TouchHeight),
+                                ) { Text("처리 완료로 기록") }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = model::dismissArrival) { Text(if (hasTask) "나중에" else "확인") } },
+        )
+    }
+
+    ui.resolving?.let { note ->
+        var comment by remember(note.id) { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = model::dismissResolve,
+            title = { Text("처리 완료로 기록할까요?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(note.text, style = MaterialTheme.typography.bodyLarge)
+                    OutlinedTextField(
+                        value = comment,
+                        onValueChange = { comment = it.take(200) },
+                        label = { Text("처리 메모 (선택)") },
+                        supportingText = { Text("예: 구매팀 김OO님께 전달 · ${comment.length}/200") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = { TextButton(onClick = { model.resolve(comment) }, enabled = !ui.busy) { Text("완료") } },
+            dismissButton = { TextButton(onClick = model::dismissResolve) { Text("취소") } },
+        )
+    }
+
+    ui.archiving?.let { note ->
+        AlertDialog(
+            onDismissRequest = model::dismissArchive,
+            title = { Text("이 참고 정보를 내릴까요?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(note.text, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "다음 운전자에게 더는 보이지 않고 되돌릴 수 없어요. 내용이 바뀐 거라면 '고치기'로 고쳐주세요.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+            confirmButton = { TextButton(onClick = model::archive, enabled = !ui.busy) { Text("내리기") } },
+            dismissButton = { TextButton(onClick = model::dismissArchive) { Text("취소") } },
+        )
+    }
+
+    if (ui.confirmReturn) {
+        AlertDialog(
+            onDismissRequest = model::dismissReturn,
+            title = { Text("반납할까요?") },
+            text = {
+                Text(
+                    if (ui.openTaskCount > 0) "진행 중인 일 ${ui.openTaskCount}건은 다음 운전자에게 그대로 넘어가요. 새로 남길 내용이 있다면 먼저 남겨주세요."
+                    else "남은 일이 없어요. 다음 운전자에게 알릴 내용이 있다면 먼저 남겨주세요.",
+                )
+            },
+            confirmButton = { TextButton(onClick = model::returnVehicle, enabled = !ui.busy) { Text("반납하기") } },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = model::dismissReturn) { Text("취소") }
+                    TextButton(onClick = { model.newNote(returnAfterSave = true) }) { Text("인계 먼저 남기기") }
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun TopBar(ui: HandoverUiState, vehicleName: String) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(color = scheme.surfaceVariant) {
+        Row(
+            Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 24.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("차곡", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    listOfNotNull(vehicleName, ui.driver?.let { "${it.name}님 사용 중" }).joinToString(" · "),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+            Tag(runtimeLabel(ui.snapshot), scheme.secondaryContainer, scheme.onSecondaryContainer)
+            when (ui.parked) {
+                true -> Tag("주차 중", scheme.primaryContainer, scheme.onPrimaryContainer)
+                false -> Tag("주행 중", scheme.errorContainer, scheme.onErrorContainer)
+                null -> Tag("차량 상태 미확인", scheme.errorContainer, scheme.onErrorContainer)
+            }
+        }
+    }
+}

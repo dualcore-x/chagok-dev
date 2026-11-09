@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 야간 모드. Theme.kt의 야간 바탕색과 맞춘다. -->
+    <style name="Theme.DriveCompanion" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#FF0D1320</item>
+    </style>
+</resources>

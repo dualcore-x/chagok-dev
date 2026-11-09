@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 앱이 뜨기 전 창 배경. Compose 테마(Theme.kt)의 주간 바탕색과 맞춘다. -->
+    <style name="Theme.DriveCompanion" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFF4F6FA</item>
+    </style>
+</resources>

@@ -1,0 +1,32 @@
+[versions]
+agp = "8.9.2"
+kotlin = "2.1.20"
+composeBom = "2025.04.01"
+activity = "1.10.1"
+lifecycle = "2.8.7"
+junit = "4.13.2"
+serialization = "1.8.1"
+coroutines = "1.10.2"
+pleosVehicle = "2.3.2"
+pleosNavi = "3.0.5"
+pleosSpeech = "3.3.1"
+
+[libraries]
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+pleos-vehicle = { module = "ai.pleos.playground:Vehicle", version.ref = "pleosVehicle" }
+pleos-navi = { module = "ai.pleos.playground:NaviHelper", version.ref = "pleosNavi" }
+pleos-tts = { module = "ai.pleos.playground:TextToSpeech", version.ref = "pleosSpeech" }
+pleos-stt = { module = "ai.pleos.playground:SpeechToText", version.ref = "pleosSpeech" }
+junit = { module = "junit:junit", version.ref = "junit" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

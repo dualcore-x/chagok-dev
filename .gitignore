@@ -1,0 +1,28 @@
+# Local OS and editor files
+.DS_Store
+.idea/
+*.iml
+
+# Android/Gradle generated files and machine configuration
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.cxx/
+.externalNativeBuild/
+
+# Credentials and signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+
+# Local user records and diagnostics
+local-data/
+*.log
+
+# Optional future Node tooling
+node_modules/
