@@ -90,15 +90,16 @@ private val typography = Typography(
     headlineLarge = base.headlineLarge.pretendard(),
     headlineSmall = base.headlineSmall.pretendard(),
     titleSmall = base.titleSmall.pretendard(),
-    bodySmall = base.bodySmall.pretendard(),
-    labelSmall = base.labelSmall.pretendard(),
     headlineMedium = base.headlineMedium.copy(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.SemiBold).pretendard(),
     titleLarge = base.titleLarge.copy(fontSize = 26.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold).pretendard(),
     titleMedium = base.titleMedium.copy(fontSize = 21.sp, lineHeight = 28.sp).pretendard(),
     bodyLarge = base.bodyLarge.copy(fontSize = 20.sp, lineHeight = 30.sp).pretendard(),
-    bodyMedium = base.bodyMedium.copy(fontSize = 17.sp, lineHeight = 25.sp).pretendard(),
+    bodyMedium = base.bodyMedium.copy(fontSize = 19.sp, lineHeight = 27.sp).pretendard(),
     labelLarge = base.labelLarge.copy(fontSize = 19.sp, fontWeight = FontWeight.SemiBold).pretendard(),
-    labelMedium = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium).pretendard(),
+    labelMedium = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium).pretendard(),
+    // 입력칸 글자 수(0/300) 같은 가장 작은 글자도 차 안에서 읽히게 키운다.
+    bodySmall = base.bodySmall.copy(fontSize = 16.sp, lineHeight = 22.sp).pretendard(),
+    labelSmall = base.labelSmall.copy(fontSize = 15.sp, lineHeight = 20.sp).pretendard(),
 )
 
 // 모서리는 넉넉히 둥글게. 카드와 버튼이 부드럽고 친근해 보이게 한다.
