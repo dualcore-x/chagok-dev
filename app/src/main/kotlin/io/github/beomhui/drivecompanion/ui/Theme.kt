@@ -8,6 +8,11 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -103,7 +108,22 @@ private val shapes = Shapes(
     large = RoundedCornerShape(24.dp),
 )
 
+/** 앱 화면에 쓰는 배율 밀도. 안내창은 별도 창이라 시스템 밀도로 돌아가므로 이 값을 다시 씌운다(AppAlertDialog). */
+val LocalAppDensity = staticCompositionLocalOf<Density?> { null }
+
+/** 화면 비율을 맞추는 기준 폭. 이보다 넓은 창에서는 전체를 비례해서 키운다. */
+private const val DesignWidthDp = 1280f
+
+/**
+ * Pleos처럼 큰 화면(2560×1440, 160dpi, 앱 영역 약 1680dp)에서는 dp 크기 그대로면 글자와 버튼이 화면에 비해 작다.
+ * 앱 창 폭이 기준보다 넓으면 밀도를 올려 글자·버튼·여백을 같은 비율로 키운다(최대 1.5배). 좁은 화면은 그대로다.
+ */
 @Composable
 fun DriveCompanionTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) night else day, typography = typography, shapes = shapes, content = content)
+    val density = LocalDensity.current
+    val scale = (LocalConfiguration.current.screenWidthDp / DesignWidthDp).coerceIn(1f, 1.5f)
+    val scaled = Density(density.density * scale, density.fontScale)
+    CompositionLocalProvider(LocalDensity provides scaled, LocalAppDensity provides scaled) {
+        MaterialTheme(colorScheme = if (isSystemInDarkTheme()) night else day, typography = typography, shapes = shapes, content = content)
+    }
 }
