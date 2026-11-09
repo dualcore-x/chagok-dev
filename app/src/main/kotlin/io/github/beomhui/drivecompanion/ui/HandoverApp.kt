@@ -1,6 +1,8 @@
 package io.github.beomhui.drivecompanion.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -8,8 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.beomhui.drivecompanion.R
 import io.github.beomhui.drivecompanion.core.handover.NoteKind
 
 /** 내용 폭을 제한해 가로로 넓은 차량 화면에서도 한눈에 읽히게 한다. */
@@ -34,7 +41,8 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
             Column(Modifier.widthIn(max = ContentMaxWidth).fillMaxSize()) {
                 ui.warning?.let { Banner(it, "닫기", model::dismissWarning) }
-                if (!ui.loading && ui.loadError == null && !ui.inputAllowed) {
+                // 앱을 켠 직후 연결 중일 때는 경고하지 않는다. 오류처럼 보이기 때문이다(입력은 계속 막는다).
+                if (!ui.loading && ui.loadError == null && !ui.inputAllowed && !(ui.parked == null && ui.connecting)) {
                     Banner(
                         if (ui.parked == false) "주행 중에는 입력할 수 없어요. 주차한 뒤 이어서 진행해주세요."
                         else "차량 상태를 확인하지 못해 입력을 잠시 막았어요.",
@@ -82,7 +90,7 @@ fun HandoverApp(model: HandoverViewModel = viewModel(factory = HandoverViewModel
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        if (hasTask) "이곳에 남겨진 인계예요. 끝낸 일은 처리 완료로 기록해주세요." else "이곳에 남겨진 참고 정보예요.",
+                        if (hasTask) "끝낸 일은 처리 완료로 기록해주세요." else "이곳에 남겨진 참고 정보예요.",
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     items.forEach { item ->
@@ -179,8 +187,9 @@ private fun TopBar(ui: HandoverUiState, vehicleName: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            AppMark()
             Column(Modifier.weight(1f)) {
-                Text("차곡", style = MaterialTheme.typography.titleLarge)
+                Text("차곡", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
                 Text(
                     listOfNotNull(vehicleName, ui.driver?.let { "${it.name}님 사용 중" }).joinToString(" · "),
                     style = MaterialTheme.typography.bodyMedium,
@@ -191,8 +200,20 @@ private fun TopBar(ui: HandoverUiState, vehicleName: String) {
             when (ui.parked) {
                 true -> Tag("주차 중", scheme.primaryContainer, scheme.onPrimaryContainer)
                 false -> Tag("주행 중", scheme.errorContainer, scheme.onErrorContainer)
-                null -> Tag("차량 상태 미확인", scheme.errorContainer, scheme.onErrorContainer)
+                null -> if (ui.connecting) Tag("차량 연결 중", scheme.secondaryContainer, scheme.onSecondaryContainer)
+                else Tag("차량 상태 미확인", scheme.errorContainer, scheme.onErrorContainer)
             }
         }
+    }
+}
+
+/** 상단 제목 옆 작은 앱 표시. 런처 아이콘과 같은 그림을 쓰고, 아이콘의 기본 여백을 잘라 꽉 차게 키운다. */
+@Composable
+private fun AppMark() {
+    Box(
+        Modifier.size(40.dp).clip(MaterialTheme.shapes.small).background(Color(0xFF2F6BEF)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(painterResource(R.drawable.ic_launcher_foreground), contentDescription = null, modifier = Modifier.requiredSize(78.dp))
     }
 }

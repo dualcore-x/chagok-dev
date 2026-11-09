@@ -2,6 +2,7 @@ package io.github.beomhui.drivecompanion.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.beomhui.drivecompanion.core.handover.BriefingReason
@@ -34,7 +36,9 @@ private val timeFormat = DateTimeFormatter.ofPattern("M월 d일 HH:mm", Locale.K
 
 fun formatTime(epochMillis: Long): String = timeFormat.format(Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()))
 
+/** 실행 환경과 데이터 출처(Q05). 둘 다 모르는 시뮬레이션이면 짧게 "시뮬레이션"만 쓴다. */
 fun runtimeLabel(snapshot: VehicleSnapshot?): String {
+    if (snapshot != null && snapshot.isSimulated && snapshot.runtime == RuntimeEnvironment.UNKNOWN) return "시뮬레이션"
     val runtime = when (snapshot?.runtime) {
         RuntimeEnvironment.EMULATOR -> "에뮬레이터"
         RuntimeEnvironment.VEHICLE -> "실차"
@@ -58,8 +62,8 @@ fun kindLabel(kind: NoteKind) = if (kind == NoteKind.TASK) "해야 할 일" else
 
 @Composable
 fun Tag(text: String, container: Color, content: Color) {
-    Surface(color = container, contentColor = content, shape = MaterialTheme.shapes.small) {
-        Text(text, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
+    Surface(color = container, contentColor = content, shape = RoundedCornerShape(50)) {
+        Text(text, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
     }
 }
 
@@ -87,30 +91,34 @@ fun NoteCard(
 ) {
     val scheme = MaterialTheme.colorScheme
     val emphasized = reason == BriefingReason.NEW || reason == BriefingReason.UPDATED
-    // 새로 받거나 바뀐 인계는 강조색 테두리로 먼저 눈에 띄게 한다. 태그는 상태(무엇을 할지)만 색으로 두고, 종류·대상은 아래 한 줄 글자로 내린다.
+    // 새로 받거나 바뀐 인계는 강조색 테두리로 먼저 눈에 띄게 한다. 색 태그는 상태만, 나머지 정보는 회색 한 줄로 모은다.
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.outlinedCardColors(containerColor = if (emphasized) scheme.surfaceContainerHigh else scheme.surfaceVariant),
-        border = if (emphasized) BorderStroke(2.dp, scheme.primary) else CardDefaults.outlinedCardBorder(),
+        border = if (emphasized) BorderStroke(2.dp, scheme.primary) else BorderStroke(1.dp, scheme.outlineVariant),
     ) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (reason != null || note.importance == Importance.HIGH) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (reason != null) ReasonTag(reason, mine)
-                    if (note.importance == Importance.HIGH) Tag("중요", scheme.tertiaryContainer, scheme.onTertiaryContainer)
-                }
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (reason != null) ReasonTag(reason, mine)
+                if (note.importance == Importance.HIGH) Tag("중요", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+                Spacer(Modifier.weight(1f))
+                Text(
+                    "${kindLabel(note.kind)} · ${anchorLabel(note.anchor, place)}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurfaceVariant,
+                )
             }
             LongText(note.text)
             Text(
-                listOf(kindLabel(note.kind), anchorLabel(note.anchor, place), authorName ?: "알 수 없는 운전자", formatTime(note.createdAt))
-                    .joinToString(" · ") +
-                    if (note.contentUpdatedAt != note.createdAt) " · ${formatTime(note.contentUpdatedAt)} 수정" else "",
+                listOfNotNull(
+                    authorName ?: "알 수 없는 운전자",
+                    formatTime(note.createdAt) + if (note.contentUpdatedAt != note.createdAt) " (${formatTime(note.contentUpdatedAt)} 수정)" else "",
+                    note.snapshot?.let(::describeSnapshot),
+                ).joinToString(" · "),
                 style = MaterialTheme.typography.bodyMedium,
                 color = scheme.onSurfaceVariant,
             )
-            note.snapshot?.let {
-                Text("남길 때 차량 상태: ${describeSnapshot(it)}", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
-            }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
@@ -121,15 +129,19 @@ fun NoteCard(
     }
 }
 
+/** 섹션 이름 옆에 건수를 작은 동그라미로 붙인다. */
 @Composable
 fun SectionTitle(text: String, count: Int? = null) {
-    Text(
-        if (count != null) "$text $count" else text,
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(top = 12.dp),
-    )
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier.padding(top = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(text, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+        if (count != null) Tag("$count", scheme.secondaryContainer, scheme.onSecondaryContainer)
+    }
 }
-
 @Composable
 fun Banner(text: String, actionLabel: String? = null, onAction: () -> Unit = {}) {
     Surface(color = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer, shape = MaterialTheme.shapes.medium) {

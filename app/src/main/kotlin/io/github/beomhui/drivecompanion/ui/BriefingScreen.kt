@@ -1,5 +1,6 @@
 package io.github.beomhui.drivecompanion.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.beomhui.drivecompanion.BuildConfig
 import io.github.beomhui.drivecompanion.core.handover.ArrivalEvidence
@@ -64,7 +66,7 @@ fun BriefingScreen(ui: HandoverUiState, model: HandoverViewModel) {
     }
 }
 
-/** 인사, 요약 문장, 숫자 칸. 숫자는 운전자가 한눈에 보도록 크게, 요약 문장은 시연 대본과 같은 문구를 그대로 둔다. */
+/** 인사와 숫자 칸. 긴 요약 문장 대신 숫자로 한눈에 보여준다(요약 문장은 core에 남아 읽어주기에 쓸 수 있다). */
 @Composable
 private fun Overview(briefing: Briefing) {
     val scheme = MaterialTheme.colorScheme
@@ -80,7 +82,6 @@ private fun Overview(briefing: Briefing) {
                 Stat("목적지 일", briefing.atDestination.size, scheme.secondaryContainer, scheme.onSecondaryContainer, Modifier.weight(1f))
             }
         }
-        Text(briefing.summary, style = MaterialTheme.typography.bodyLarge, color = scheme.primary)
     }
 }
 
@@ -94,8 +95,8 @@ private fun Stat(label: String, count: Int, container: Color, content: Color, mo
         shape = MaterialTheme.shapes.medium,
         modifier = modifier,
     ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-            Text("$count", style = MaterialTheme.typography.headlineMedium)
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Text("$count", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
             Text(label, style = MaterialTheme.typography.labelMedium)
         }
     }
@@ -139,8 +140,13 @@ private fun NoteList(
         if (ui.recentlyDone.isNotEmpty()) {
             item { SectionTitle("최근 처리한 일") }
             items(ui.recentlyDone, key = { "done-" + it.note.id }) { entry ->
-                OutlinedCard(Modifier.fillMaxWidth()) {
-                    Row(Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                OutlinedCard(
+                    Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                ) {
+                    Row(Modifier.padding(horizontal = 20.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(entry.note.text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
@@ -150,7 +156,7 @@ private fun NoteList(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        OutlinedButton(onClick = { model.reopen(entry.note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
+                        TextButton(onClick = { model.reopen(entry.note) }, enabled = enabled, modifier = Modifier.heightIn(min = TouchHeight)) {
                             Text("다시 열기")
                         }
                     }
@@ -202,33 +208,37 @@ private fun DestinationPanel(ui: HandoverUiState, enabled: Boolean, model: Hando
     val destination = ui.destination
     val place = destination?.place
     val scheme = MaterialTheme.colorScheme
-    OutlinedCard(Modifier.fillMaxWidth()) {
-        // 차량 화면은 세로가 짧다. 목적지가 없을 때는 설명 줄을 빼서 아래 인계가 먼저 보이게 한다.
+    OutlinedCard(
+        Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = scheme.surfaceVariant),
+        border = BorderStroke(1.dp, scheme.outlineVariant),
+    ) {
+        // 차량 화면은 세로가 짧다. 설명은 꼭 필요한 한 줄만 둔다.
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    if (destination == null) "어디로 가나요? 고르면 그곳 일을 먼저 보여드려요." else "이번 목적지",
+                    if (destination == null) "어디로 가나요?" else "이번 목적지",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
                 )
                 when (destination?.source) {
-                    DestinationSource.NAVIGATION -> Tag("내비 목적지", scheme.secondaryContainer, scheme.onSecondaryContainer)
-                    DestinationSource.USER -> Tag("직접 선택", scheme.surfaceVariant, scheme.onSurfaceVariant)
+                    DestinationSource.NAVIGATION -> Tag("내비 목적지", scheme.primaryContainer, scheme.onPrimaryContainer)
+                    DestinationSource.USER -> Tag("직접 선택", scheme.secondaryContainer, scheme.onSecondaryContainer)
                     null -> Unit
                 }
                 when (ui.arrivedBy) {
                     // 영상에서도 도착을 무엇으로 알았는지 드러낸다(Q05). 에뮬레이터는 내비 도착 신호를 못 만든다.
-                    ArrivalEvidence.NAVIGATION -> Tag("도착 · 내비 신호", scheme.primaryContainer, scheme.onPrimaryContainer)
-                    ArrivalEvidence.DRIVER -> Tag("도착 · 직접 확인", scheme.primaryContainer, scheme.onPrimaryContainer)
+                    ArrivalEvidence.NAVIGATION -> Tag("도착 · 내비 신호", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+                    ArrivalEvidence.DRIVER -> Tag("도착 · 직접 확인", scheme.tertiaryContainer, scheme.onTertiaryContainer)
                     null -> Unit
                 }
             }
-            if (destination != null) {
+            if (destination != null && !ui.arrived) {
                 Text(
                     when {
-                        place == null -> "'${destination.label}'은 등록된 장소가 아니라서 연결된 인계가 없어요."
-                        ui.arrived -> "${place.name}에 도착했어요."
-                        else -> "${place.name}에 도착해 주차하면 그곳 인계를 다시 알려드려요."
+                        place == null -> "'${destination.label}'은 등록된 장소가 아니에요."
+                        else -> "도착해 주차하면 다시 알려드려요."
                     },
                     style = MaterialTheme.typography.bodyLarge,
                     color = scheme.onSurfaceVariant,
