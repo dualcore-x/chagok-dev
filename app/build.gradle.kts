@@ -14,11 +14,11 @@ android {
     namespace = "io.github.beomhui.drivecompanion"
     compileSdk = 35
     defaultConfig {
-        applicationId = "io.github.beomhui.drivecompanion"
+        applicationId = "com.dualcore.chagok"
         minSdk = 28
         targetSdk = 35
         versionCode = 1
-        versionName = "0.2.0"
+        versionName = "1.0.0"
     }
     signing?.let {
         signingConfigs.create("release") {

@@ -6,7 +6,7 @@
 
 - Pleos Connect Emulator v2.1.0을 **Device Manager에서 cold boot**로 켭니다. 명령줄로 켰을 때 부하가 100 이상으로 올라 설치가 멈춘 적이 있습니다.
 - `adb forward tcp:8088 tcp:8088` 후 `tools/vc.sh gear Park`, `tools/vc.sh odo <지금보다 큰 값>`, `tools/vc.sh soc 80`. 주행거리는 줄일 수 없습니다.
-- debug APK를 설치하고 앱 데이터를 지운 뒤(`adb shell pm clear --user current io.github.beomhui.drivecompanion.debug`) **시연 데이터 넣기**로 시작합니다. Pleos 에뮬레이터는 앱이 사용자 10으로 돌아서 `--user current`를 빼면 데이터가 지워지지 않습니다.
+- debug APK를 설치하고 앱 데이터를 지운 뒤(`adb shell pm clear --user current com.dualcore.chagok.debug`) **시연 데이터 넣기**로 시작합니다. Pleos 에뮬레이터는 앱이 사용자 10으로 돌아서 `--user current`를 빼면 데이터가 지워지지 않습니다.
 - 목적지 설정·취소와 다른 앱의 오디오 포커스 요청에는 확인용 앱(`tools/probe`, `./gradlew :probe:installDebug`)을 씁니다. 사용법은 `tools/probe/README.md`에 있습니다.
   - `adb shell am start -S -n dev.handover.probe/.MainActivity --es cmd route --es lat 37.4150 --es lon 127.0985 --es name 한빛상사`
   - `... --es cmd cancel` (확인용 앱으로 시작한 경로만 지워집니다)
@@ -15,7 +15,7 @@
 
 ## 시나리오와 결과
 
-2026-11-06에 main `9bb6130` debug로 처음 돌렸고, 동결 후보인 main `f7a0624`(PR #14~#17 머지 후) debug로 2026-11-07에 10개 모두 다시 돌려 통과했습니다. 11/7에는 3번에서 목적지 칸의 "도착 · 직접 확인" 표시(PR #14)도 확인했습니다. 기능 동결일인 2026-11-08에는 인수 화면 2단 배치와 주간·야간 색상(PR #22), '중요한 일로 표시' 줄 전체 토글(PR #25)이 들어간 main `e875ada` debug로 10개를 다시 돌려 모두 통과했습니다.
+2026-11-06에 main `9bb6130` debug로 처음 돌렸고, 동결 후보인 main `f7a0624`(PR #14~#17 머지 후) debug로 2026-11-07에 10개 모두 다시 돌려 통과했습니다. 11/7에는 3번에서 목적지 칸의 "도착 · 직접 확인" 표시(PR #14)도 확인했습니다. 기능 동결일인 2026-11-08에는 인수 화면 2단 배치와 주간·야간 색상(PR #22), '중요한 일로 표시' 줄 전체 토글(PR #25)이 들어간 main `e875ada` debug로 10개를 다시 돌려 모두 통과했습니다. 새 저장소로 옮기고 화면 마감(PR #2, #3), 큰 화면 배율(PR #6), 다시 열기 수정(PR #7), 보조 글자(PR #8)가 들어간 뒤에는 제출 APK와 같은 `2ffae81`(앱 ID `com.dualcore.chagok`, 1.0.0) debug로 2026-11-10에 1~10번과 다시 열기(독 3회, 앱 목록 2회)를 돌려 모두 통과했습니다. 7번은 다른 앱의 요청 직후 우리 포커스가 바로 반납되고 다시 요청하지 않는 것을, 8·10번은 끝나거나 D가 되면 포커스가 반납되는 것을 `CarAudioService` 기록으로 확인했습니다. 다시 열기에서는 매번 운전자 화면과 "이번 목적지"가 그대로였고 MainActivity는 하나였습니다. 같은 날 release를 새로 설치해 개발 도구 숨김, 시작 직후 "차량 연결 중" 표시(빨간 안내 없음), 남기기(한글 입력) → 반납 → 다음 운전자 요약 → 처리 완료 → 강제 종료 후 재실행 시 기록 유지, 크래시 없음을 확인했습니다.
 
 | # | 시나리오 | 기대 | 결과 |
 | --- | --- | --- | --- |

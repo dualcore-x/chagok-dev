@@ -24,7 +24,7 @@
 
 ## 촬영 전 준비
 
-1. Pleos Connect Emulator를 cold boot하고 앱 데이터를 초기화합니다(`adb shell pm clear --user current io.github.beomhui.drivecompanion`). Pleos 에뮬레이터는 앱이 사용자 10으로 돌아서 `--user current`를 빼면 데이터가 지워지지 않습니다. 기기 시계가 되돌아가면 "내용 바뀜"이 뜨지 않을 수 있습니다(`docs/architecture.md` 알려진 제약).
+1. Pleos Connect Emulator를 cold boot하고 앱 데이터를 초기화합니다(`adb shell pm clear --user current com.dualcore.chagok`). Pleos 에뮬레이터는 앱이 사용자 10으로 돌아서 `--user current`를 빼면 데이터가 지워지지 않습니다. 기기 시계가 되돌아가면 "내용 바뀜"이 뜨지 않을 수 있습니다(`docs/architecture.md` 알려진 제약).
 2. Virtual Console을 설정합니다. 숫자는 화면에 보이기 쉬운 값이면 됩니다.
 
    ```sh
