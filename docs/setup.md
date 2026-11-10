@@ -36,7 +36,7 @@ CLI에서는 SDK 경로를 `ANDROID_HOME`으로 지정해도 됩니다. JDK는 `
 ```sh
 ./gradlew :core:test :app:lintDebug :app:assembleDebug :app:assembleRelease
 ./gradlew :app:installDebug
-adb shell am start -n io.github.beomhui.drivecompanion.debug/io.github.beomhui.drivecompanion.MainActivity
+adb shell monkey -p com.dualcore.chagok.debug -c android.intent.category.LAUNCHER 1
 ```
 
 설치·시작 명령에는 실행 중인 에뮬레이터나 연결된 기기가 필요합니다. Windows에서는 `gradlew.bat`를 사용합니다. 별도 Gradle 전역 설치는 필요 없습니다.

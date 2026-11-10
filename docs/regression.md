@@ -6,7 +6,7 @@
 
 - Pleos Connect Emulator v2.1.0을 **Device Manager에서 cold boot**로 켭니다. 명령줄로 켰을 때 부하가 100 이상으로 올라 설치가 멈춘 적이 있습니다.
 - `adb forward tcp:8088 tcp:8088` 후 `tools/vc.sh gear Park`, `tools/vc.sh odo <지금보다 큰 값>`, `tools/vc.sh soc 80`. 주행거리는 줄일 수 없습니다.
-- debug APK를 설치하고 앱 데이터를 지운 뒤(`adb shell pm clear --user current io.github.beomhui.drivecompanion.debug`) **시연 데이터 넣기**로 시작합니다. Pleos 에뮬레이터는 앱이 사용자 10으로 돌아서 `--user current`를 빼면 데이터가 지워지지 않습니다.
+- debug APK를 설치하고 앱 데이터를 지운 뒤(`adb shell pm clear --user current com.dualcore.chagok.debug`) **시연 데이터 넣기**로 시작합니다. Pleos 에뮬레이터는 앱이 사용자 10으로 돌아서 `--user current`를 빼면 데이터가 지워지지 않습니다.
 - 목적지 설정·취소와 다른 앱의 오디오 포커스 요청에는 확인용 앱(`tools/probe`, `./gradlew :probe:installDebug`)을 씁니다. 사용법은 `tools/probe/README.md`에 있습니다.
   - `adb shell am start -S -n dev.handover.probe/.MainActivity --es cmd route --es lat 37.4150 --es lon 127.0985 --es name 한빛상사`
   - `... --es cmd cancel` (확인용 앱으로 시작한 경로만 지워집니다)
