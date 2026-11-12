@@ -11,7 +11,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 에뮬레이터 | Pleos Connect Emulator v2.1.0 (Android 14 · API 34, arm64), Android Studio Device Manager에서 **Cold boot**, RAM 4GB |
+| 에뮬레이터 | Pleos Connect Emulator v2.1.0 (Android 14 · API 34, arm64), 화면 2560×1440, 160dpi. Android Studio Device Manager에서 **Cold boot**, RAM 4GB |
 | 화면 규격 | 2560×1440 가로, 160dpi(에뮬레이터 기본값). 앱은 왼쪽 계기 영역과 위·아래 시스템 바를 뺀 약 1680×1210dp 영역에 뜨고, 이 크기에서 글자·버튼을 화면에 맞게 키웁니다 |
 | 개발 PC | macOS Apple Silicon. Windows·Linux는 [공식 설치 안내](https://document.pleos.ai/docs/connect/guide/getting-started/application-development/setup-connect-sdk-emulator)의 x86 이미지 주소를 씁니다 |
 | 빌드 | JDK 17 또는 21, Android SDK Platform 35 · Build Tools 35.0.0. JDK 25에서는 Gradle 8.13이 실행되지 않습니다 |
