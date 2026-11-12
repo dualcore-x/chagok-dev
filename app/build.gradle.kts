@@ -11,7 +11,7 @@ val signingFile = file(System.getenv("DC_SIGNING_PROPERTIES") ?: "${System.getPr
 val signing = if (signingFile.isFile) Properties().apply { signingFile.inputStream().use { load(it) } } else null
 
 android {
-    namespace = "io.github.beomhui.drivecompanion"
+    namespace = "com.dualcore.chagok"
     compileSdk = 35
     defaultConfig {
         applicationId = "com.dualcore.chagok"
