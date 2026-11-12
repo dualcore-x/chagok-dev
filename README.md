@@ -63,10 +63,10 @@ release 서명키는 저장소 밖에 둡니다. 처음 한 번 `tools/make-sign
 
 | 항목 | 값 |
 | --- | --- |
-| 빌드한 소스 | `2ffae81` (main `2ac2bff`에 앱 ID·버전 변경을 더한 커밋, `./gradlew :app:assembleRelease`) |
+| 빌드한 소스 | 이 저장소의 소스 (패키지 경로를 `com.dualcore.chagok`으로 바꾼 뒤 `./gradlew :app:assembleRelease`) |
 | 앱 ID · 버전 | `com.dualcore.chagok` · versionName 1.0.0 · versionCode 1 · minSdk 28 · targetSdk 35 |
 | 서명 | APK Signature Scheme v3, 인증서 SHA-256 `5440cde4fd78a24d2d64ea98c6fd498ef30a07f002e51ae1dbe6a0f9387e1e07` |
-| 파일 SHA-256 | `e6ded0dd673901e00dfbdbd00a6373c9cc05a0743fd859da0d8409fcd09c0c43` |
+| 파일 SHA-256 | `37a25f5e54e02ba555085bad38041fcf0f1d278daf5b2130608689120f7f3b4b` |
 | 크기 | 42.6MB |
 
 받은 파일이 같은지 확인할 때는 `shasum -a 256 apk/DualCore_Chagok_release.apk`의 결과를 위 값과 비교합니다.
